@@ -757,7 +757,16 @@
         const MAX_FOODS = 10; // Maximum number of foods on field
         
         // Firebase Functions Reference
-        const claimTokenFunction = functions.httpsCallable('claimToken');
+        const CLAIM_TOKEN_HTTP_URL = 'https://us-central1-big-pig-38efe.cloudfunctions.net/claimTokenHttp';
+        const claimTokenFunction = async (payload) => {
+            const response = await fetch(CLAIM_TOKEN_HTTP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const json = await response.json();
+            return { data: json };
+        };
         
         // Image Resources
         let snakeHeadImage = null;
