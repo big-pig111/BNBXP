@@ -1,0 +1,586 @@
+/* Windows XP 模拟器样式 */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Tahoma', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+}
+
+/* 桌面 */
+.desktop {
+    width: 100vw;
+    height: calc(100vh - 30px);
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><defs><pattern id="grass" patternUnits="userSpaceOnUse" width="100" height="100"><rect width="100" height="100" fill="%2300a651"/><circle cx="20" cy="20" r="2" fill="%23008a44"/><circle cx="80" cy="40" r="1.5" fill="%23008a44"/><circle cx="60" cy="80" r="1" fill="%23008a44"/></pattern></defs><rect width="1920" height="1080" fill="url(%23grass)"/></svg>') center/cover;
+    position: relative;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    overflow-y: auto;
+}
+
+/* 桌面图标 */
+.desktop-icon {
+    width: 80px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    transition: all 0.2s ease;
+    border-radius: 3px;
+    padding: 5px;
+    flex-shrink: 0;
+    margin-bottom: 5px;
+}
+
+.desktop-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.desktop-icon.selected {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.desktop-icon i {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+.desktop-icon span {
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.2;
+    word-wrap: break-word;
+    max-width: 70px;
+}
+
+/* 任务栏 */
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(to bottom, #245edc 0%, #1e4bb8 50%, #1a3f9e 100%);
+    border-top: 1px solid #4a6fd8;
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 开始按钮 */
+.start-button {
+    width: 80px;
+    height: 28px;
+    background: linear-gradient(to bottom, #4a6fd8 0%, #3a5fc8 50%, #2a4fb8 100%);
+    border: 1px solid #6a8ff8;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    margin-left: 2px;
+    transition: all 0.2s ease;
+}
+
+.start-button:hover {
+    background: linear-gradient(to bottom, #5a7fe8 0%, #4a6fd8 50%, #3a5fc8 100%);
+}
+
+.start-button i {
+    margin-right: 5px;
+}
+
+/* 快速启动栏 */
+.quick-launch {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.quick-launch-item {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    margin-right: 2px;
+    transition: all 0.2s ease;
+}
+
+.quick-launch-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 任务栏窗口 */
+.taskbar-windows {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.taskbar-window {
+    height: 24px;
+    background: linear-gradient(to bottom, #4a6fd8 0%, #3a5fc8 50%, #2a4fb8 100%);
+    border: 1px solid #6a8ff8;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    cursor: pointer;
+    color: white;
+    font-size: 11px;
+    margin-right: 2px;
+    transition: all 0.2s ease;
+}
+
+.taskbar-window:hover {
+    background: linear-gradient(to bottom, #5a7fe8 0%, #4a6fd8 50%, #3a5fc8 100%);
+}
+
+.taskbar-window.active {
+    background: linear-gradient(to bottom, #6a8ff8 0%, #5a7fe8 50%, #4a6fd8 100%);
+}
+
+/* 系统托盘 */
+.system-tray {
+    display: flex;
+    align-items: center;
+    margin-right: 5px;
+}
+
+.tray-item {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    margin-left: 2px;
+}
+
+.tray-item.time {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    padding: 0 4px;
+    font-size: 11px;
+}
+
+/* 开始菜单 */
+.start-menu {
+    position: fixed;
+    bottom: 30px;
+    left: 2px;
+    width: 300px;
+    background: linear-gradient(to bottom, #4a6fd8 0%, #3a5fc8 50%, #2a4fb8 100%);
+    border: 2px solid #6a8ff8;
+    border-radius: 5px;
+    color: white;
+    z-index: 1001;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.start-menu.show {
+    display: block;
+}
+
+.start-menu-header {
+    padding: 10px;
+    border-bottom: 1px solid #6a8ff8;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.user-info i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.start-menu-items {
+    padding: 5px 0;
+}
+
+.menu-item {
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.menu-item i {
+    margin-right: 10px;
+    width: 16px;
+    text-align: center;
+}
+
+.start-menu-footer {
+    border-top: 1px solid #6a8ff8;
+    padding: 5px 0;
+}
+
+/* 所有程序子菜单 */
+.all-programs-menu {
+    position: fixed;
+    bottom: 30px;
+    left: 302px;
+    width: 250px;
+    background: linear-gradient(to bottom, #4a6fd8 0%, #3a5fc8 50%, #2a4fb8 100%);
+    border: 2px solid #6a8ff8;
+    border-radius: 5px;
+    color: white;
+    z-index: 1002;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.all-programs-menu.show {
+    display: block;
+}
+
+.submenu-header {
+    padding: 10px;
+    border-bottom: 1px solid #6a8ff8;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.submenu-header i {
+    margin-right: 10px;
+}
+
+.submenu-items {
+    padding: 5px 0;
+}
+
+.submenu-item {
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submenu-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.submenu-item i {
+    margin-right: 10px;
+    width: 16px;
+    text-align: center;
+}
+
+/* 窗口容器 */
+.window-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 500;
+}
+
+/* 窗口样式 */
+.window {
+    position: absolute;
+    background: #ece9d8;
+    border: 2px solid #245edc;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    min-width: 300px;
+    min-height: 200px;
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+}
+
+.window-header {
+    background: linear-gradient(to bottom, #245edc 0%, #1e4bb8 50%, #1a3f9e 100%);
+    color: white;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move;
+    border-radius: 3px 3px 0 0;
+}
+
+.window-title {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.window-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.window-control {
+    width: 16px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.window-control:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.window-control.close:hover {
+    background: #ff4444;
+}
+
+.window-content {
+    flex: 1;
+    padding: 10px;
+    overflow: auto;
+}
+
+/* 窗口最大化样式 */
+.window.maximized {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 30px !important;
+    width: 100vw !important;
+    height: calc(100vh - 30px) !important;
+    border-radius: 0 !important;
+    z-index: 1000;
+}
+
+.window.maximized .window-content {
+    height: calc(100% - 30px) !important;
+    overflow: hidden;
+}
+
+/* 聊天室窗口最大化时的特殊处理 */
+.chat-window.maximized .window-content {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100% - 30px) !important;
+    overflow: hidden;
+}
+
+.chat-window.maximized #chatArea {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.chat-window.maximized #messageArea {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+.chat-window.maximized #userList {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+/* 聊天室窗口最大化时，未登录只显示登录区域，且居中 */
+.chat-window.maximized .window-content {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100% - 30px) !important;
+    overflow: hidden;
+    padding: 0 !important;
+}
+.chat-window.maximized #authArea {
+    flex: 1 1 0%;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 0;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+}
+.chat-window.maximized #chatArea {
+    display: none !important;
+}
+
+/* 右键菜单 */
+.context-menu {
+    position: fixed;
+    background: #ece9d8;
+    border: 1px solid #245edc;
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 2000;
+    display: none;
+    min-width: 150px;
+}
+
+.context-menu.show {
+    display: block;
+}
+
+.context-item {
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.context-item:hover {
+    background: #245edc;
+    color: white;
+}
+
+.context-item i {
+    margin-right: 10px;
+    width: 16px;
+    text-align: center;
+}
+
+/* 聊天室窗口特定样式 */
+.chat-window .window-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-messages {
+    flex: 1;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 5px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.chat-send {
+    padding: 5px 15px;
+    background: linear-gradient(to bottom, #4a6fd8 0%, #3a5fc8 50%, #2a4fb8 100%);
+    color: white;
+    border: 1px solid #6a8ff8;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.chat-send:hover {
+    background: linear-gradient(to bottom, #5a7fe8 0%, #4a6fd8 50%, #3a5fc8 100%);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .desktop-icon {
+        width: 60px;
+        height: 70px;
+    }
+    
+    .desktop-icon i {
+        font-size: 24px;
+    }
+    
+    .desktop-icon span {
+        font-size: 10px;
+    }
+    
+    .start-menu {
+        width: 250px;
+    }
+    
+    .all-programs-menu {
+        width: 200px;
+    }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.window {
+    /* 移除动画，窗口直接出现 */
+    /* animation: fadeIn 0.3s ease-out; */
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+} 

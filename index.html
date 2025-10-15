@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows XP Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Chat room button hover effects */
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Input field focus effects */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #000080 !important;
+            box-shadow: 0 0 5px rgba(0,0,128,0.3);
+        }
+        
+        /* Message area scrollbar styles */
+        #messageArea::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #messageArea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        #messageArea::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            border-radius: 4px;
+        }
+        
+        #messageArea::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        }
+        
+        /* User list scrollbar styles */
+        #userList::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #userList::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        #userList::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            border-radius: 3px;
+        }
+        
+        #userList::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        }
+        
+        /* General custom scrollbar styles */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-corner {
+            background: #f1f1f1;
+        }
+        
+        /* Smooth scrolling effects */
+        .custom-scrollbar {
+            scroll-behavior: smooth;
+        }
+        
+        /* Disable scrolling for input areas */
+        #messageInput, #sendButton, #scrollToBottomBtn {
+            overflow: hidden;
+        }
+        
+        /* Ensure input areas don't scroll */
+        .input-area {
+            overflow: hidden !important;
+        }
+        
+        /* Ensure chat area layout is correct */
+        #chatArea {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        /* Ensure message area scrolls correctly */
+        #messageArea {
+            flex: 1 !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+        }
+        
+        /* Ensure user list scrolls correctly */
+        #userList {
+            flex: 1 !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+        }
+        
+        /* Loading animation styles */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Button disabled state styles */
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        /* Success message styles */
+        .success-message {
+            color: #008000 !important;
+            font-weight: bold;
+        }
+        
+        /* Error message styles */
+        .error-message {
+            color: #ff0000 !important;
+            font-weight: bold;
+        }
+        
+        /* Force ensure chat area layout is correct at all window sizes */
+        .window-content > div {
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        
+        /* Ensure chat area content is laid out correctly */
+        #chatArea > div {
+            height: 100% !important;
+            min-height: 0 !important;
+        }
+        
+        /* Token CA Display Styles */
+        .token-ca-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 15px;
+            margin-left: auto;
+            margin-right: 10px;
+            background: linear-gradient(to bottom, #ffffff, #e6e6e6);
+            border: 1px solid #8a8a8a;
+            border-radius: 3px;
+            height: 22px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            box-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 #cccccc;
+        }
+        
+        .ca-text {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .ca-label {
+            color: #0066cc;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .ca-address {
+            color: #333333;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            user-select: all;
+        }
+        
+        .ca-address:hover {
+            background-color: #e6f3ff;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 1200px) {
+            .ca-address {
+                max-width: 150px;
+            }
+        }
+        
+        @media (max-width: 1000px) {
+            .ca-address {
+                max-width: 120px;
+            }
+        }
+        
+        @media (max-width: 800px) {
+            .token-ca-display {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Desktop background -->
+    <div class="desktop" id="desktop">
+        <!-- Desktop icons -->
+        <div class="desktop-icon" id="my-computer" draggable="true">
+            <i class="fas fa-desktop"></i>
+            <span>My Computer</span>
+        </div>
+        
+        <div class="desktop-icon" id="my-documents" draggable="true">
+            <i class="fas fa-folder"></i>
+            <span>My Documents</span>
+        </div>
+        
+        <div class="desktop-icon" id="recycle-bin" draggable="true">
+            <i class="fas fa-trash"></i>
+            <span>Recycle Bin</span>
+        </div>
+        
+        <div class="desktop-icon" id="internet-explorer" draggable="true">
+            <i class="fas fa-globe"></i>
+            <span>Internet Explorer</span>
+        </div>
+        
+        <div class="desktop-icon" id="chat-room" draggable="true">
+            <img src="png/1.png" alt="Chat Room" style="width: 32px; height: 32px; margin-bottom: 5px;">
+            <span>Chat Room</span>
+        </div>
+        
+        <div class="desktop-icon" id="games" draggable="true">
+            <img src="png/5.png" alt="Games" style="width: 32px; height: 32px; margin-bottom: 5px;">
+            <span>Games</span>
+        </div>
+        
+        <div class="desktop-icon" id="xp-tv" draggable="true" style="display: none;">
+            <img src="png/tv.png" alt="XP TV" style="width: 32px; height: 32px; margin-bottom: 5px;">
+            <span>XP TV</span>
+        </div>
+        
+        <div class="desktop-icon" id="live-tv" draggable="true" style="display: none;">
+            <img src="png/7.png" alt="Live TV" style="width: 32px; height: 32px; margin-bottom: 5px;">
+            <span>Live TV</span>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar" id="taskbar">
+        <!-- Start Button -->
+        <div class="start-button" id="start-button">
+            <i class="fas fa-windows"></i>
+            <span>Start</span>
+        </div>
+        
+        <!-- Quick Launch Bar -->
+        <div class="quick-launch">
+            <div class="quick-launch-item" id="show-desktop">
+                <i class="fas fa-desktop"></i>
+            </div>
+        </div>
+        
+        <!-- Taskbar Windows -->
+        <div class="taskbar-windows" id="taskbar-windows">
+            <!-- Dynamically added window tasks -->
+        </div>
+        
+        <!-- Token CA Display -->
+        <div class="token-ca-display" id="token-ca-display">
+            <div class="ca-text">
+                <span class="ca-label">CA:</span>
+                <span class="ca-address" id="ca-address">soon</span>
+            </div>
+        </div>
+        
+        <!-- System Tray -->
+        <div class="system-tray">
+            <div class="tray-item">
+                <i class="fas fa-volume-up"></i>
+            </div>
+            <div class="tray-item">
+                <i class="fas fa-wifi"></i>
+            </div>
+            <div class="tray-item">
+                <i class="fas fa-battery-three-quarters"></i>
+            </div>
+            <div class="tray-item time" id="clock">
+                <span id="current-time">12:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <div class="start-menu" id="start-menu">
+        <div class="start-menu-header">
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span>Administrator</span>
+            </div>
+        </div>
+        
+        <div class="start-menu-items">
+            <div class="menu-item" id="all-programs">
+                <i class="fas fa-chevron-right"></i>
+                <span>All Programs</span>
+            </div>
+            <div class="menu-item" id="my-documents-menu">
+                <i class="fas fa-folder"></i>
+                <span>My Documents</span>
+            </div>
+            <div class="menu-item" id="my-pictures">
+                <i class="fas fa-image"></i>
+                <span>My Pictures</span>
+            </div>
+            <div class="menu-item" id="my-music">
+                <i class="fas fa-music"></i>
+                <span>My Music</span>
+            </div>
+            <div class="menu-item" id="control-panel">
+                <i class="fas fa-cog"></i>
+                <span>Control Panel</span>
+            </div>
+            <div class="menu-item" id="search">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </div>
+            <div class="menu-item" id="help">
+                <i class="fas fa-question-circle"></i>
+                <span>Help and Support</span>
+            </div>
+            <div class="menu-item" id="run">
+                <i class="fas fa-play"></i>
+                <span>Run</span>
+            </div>
+        </div>
+        
+        <div class="start-menu-footer">
+            <div class="menu-item" id="logoff">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Off</span>
+            </div>
+            <div class="menu-item" id="shutdown">
+                <i class="fas fa-power-off"></i>
+                <span>Turn Off Computer</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Programs Submenu -->
+    <div class="all-programs-menu" id="all-programs-menu">
+        <div class="submenu-header">
+            <i class="fas fa-chevron-left"></i>
+            <span>All Programs</span>
+        </div>
+        <div class="submenu-items">
+            <div class="submenu-item" data-app="notepad">
+                <i class="fas fa-file-alt"></i>
+                <span>Notepad</span>
+            </div>
+            <div class="submenu-item" data-app="calculator">
+                <i class="fas fa-calculator"></i>
+                <span>Calculator</span>
+            </div>
+            <div class="submenu-item" data-app="paint">
+                <i class="fas fa-paint-brush"></i>
+                <span>Paint</span>
+            </div>
+            <div class="submenu-item" data-app="wordpad">
+                <i class="fas fa-file-word"></i>
+                <span>WordPad</span>
+            </div>
+            <div class="submenu-item" data-app="chat-room">
+                <img src="png/1.png" alt="Chat Room" style="width: 16px; height: 16px; margin-right: 10px;">
+                <span>Chat Room</span>
+            </div>
+            <div class="submenu-item" data-app="live-tv">
+                <img src="png/7.png" alt="Live TV" style="width: 16px; height: 16px; margin-right: 10px;">
+                <span>Live TV</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Window Container -->
+    <div class="window-container" id="window-container">
+        <!-- Dynamically added windows will be displayed here -->
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-item" id="refresh">
+            <i class="fas fa-sync"></i>
+            <span>Refresh</span>
+        </div>
+        <div class="context-item" id="paste">
+            <i class="fas fa-paste"></i>
+            <span>Paste</span>
+        </div>
+        <div class="context-item" id="new-folder">
+            <i class="fas fa-folder-plus"></i>
+            <span>New Folder</span>
+        </div>
+        <div class="context-item" id="properties">
+            <i class="fas fa-cog"></i>
+            <span>Properties</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    
+    <script>
+        // Token CA address copy functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const caAddress = document.getElementById('ca-address');
+            
+            caAddress.addEventListener('click', function() {
+                // Copy to clipboard
+                navigator.clipboard.writeText(this.textContent).then(function() {
+                    // Show a brief visual feedback
+                    const originalText = caAddress.textContent;
+                    caAddress.textContent = 'Copied!';
+                    caAddress.style.color = '#008000';
+                    caAddress.style.fontWeight = 'bold';
+                    
+                    setTimeout(function() {
+                        caAddress.textContent = originalText;
+                        caAddress.style.color = '#333333';
+                        caAddress.style.fontWeight = 'normal';
+                    }, 1000);
+                }).catch(function(err) {
+                    console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = caAddress.textContent;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    // Show feedback
+                    const originalText = caAddress.textContent;
+                    caAddress.textContent = 'Copied!';
+                    caAddress.style.color = '#008000';
+                    
+                    setTimeout(function() {
+                        caAddress.textContent = originalText;
+                        caAddress.style.color = '#333333';
+                    }, 1000);
+                });
+            });
+            
+            // Add tooltip
+            caAddress.title = 'Click to copy CA address';
+        });
+    </script>
+</body>
+</html> 

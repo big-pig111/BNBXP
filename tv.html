@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live TV - Streaming Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            text-align: center;
+            padding: 0 20px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo i {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #e74c3c;
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 25px;
+            padding: 10px 20px;
+            width: 400px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-btn, .profile-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #666;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .notification-btn:hover, .profile-btn:hover {
+            background: #f0f0f0;
+            color: #e74c3c;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        /* Featured Stream */
+        .featured-stream {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .featured-stream::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-20px, -20px) rotate(180deg); }
+        }
+
+        .featured-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .featured-stream h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .featured-stream p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .stream-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .watch-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .watch-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        /* Stream Grid */
+        .stream-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stream-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stream-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .stream-thumbnail {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .live-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .viewer-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stream-info {
+            padding: 20px;
+        }
+
+        .stream-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .stream-category {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .streamer-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .streamer-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .streamer-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .category-btn:hover, .category-btn.active {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+            transform: translateY(-2px);
+        }
+
+        /* Video Player Modal */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-player {
+            width: 90%;
+            max-width: 1200px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-container {
+            aspect-ratio: 16/9;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 64px;
+        }
+
+        .video-controls {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            color: white;
+        }
+
+        .video-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .video-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #e74c3c;
+        }
+
+                 /* Responsive */
+         @media (max-width: 768px) {
+             .app-container {
+                 flex-direction: column;
+             }
+             
+             .sidebar {
+                 width: 100%;
+                 height: auto;
+             }
+             
+             .search-bar {
+                 width: 200px;
+             }
+             
+             .stream-grid {
+                 grid-template-columns: 1fr;
+             }
+         }
+
+         /* Update Notice Modal */
+         .update-notice-modal {
+             display: none;
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0,0,0,0.8);
+             z-index: 2000;
+             justify-content: center;
+             align-items: center;
+         }
+
+         .update-notice-content {
+             background: white;
+             border-radius: 15px;
+             padding: 40px;
+             text-align: center;
+             max-width: 400px;
+             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+             animation: slideIn 0.5s ease-out;
+         }
+
+         @keyframes slideIn {
+             from {
+                 transform: translateY(-50px);
+                 opacity: 0;
+             }
+             to {
+                 transform: translateY(0);
+                 opacity: 1;
+             }
+         }
+
+         .update-notice-icon {
+             font-size: 64px;
+             color: #e74c3c;
+             margin-bottom: 20px;
+         }
+
+         .update-notice-title {
+             font-size: 24px;
+             font-weight: bold;
+             color: #2c3e50;
+             margin-bottom: 15px;
+         }
+
+         .update-notice-message {
+             font-size: 16px;
+             color: #7f8c8d;
+             margin-bottom: 30px;
+             line-height: 1.5;
+         }
+
+         .update-notice-btn {
+             background: #e74c3c;
+             color: white;
+             border: none;
+             padding: 12px 30px;
+             border-radius: 25px;
+             font-size: 16px;
+             font-weight: bold;
+             cursor: pointer;
+             transition: all 0.3s ease;
+         }
+
+         .update-notice-btn:hover {
+             background: #c0392b;
+             transform: translateY(-2px);
+             box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+         }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-broadcast-tower"></i>
+                <h1>Live TV</h1>
+                <p>Streaming Platform</p>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-section="home">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="trending">
+                        <i class="fas fa-fire"></i>
+                        <span>Trending</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="gaming">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Gaming</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="music">
+                        <i class="fas fa-music"></i>
+                        <span>Music</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="sports">
+                        <i class="fas fa-futbol"></i>
+                        <span>Sports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="news">
+                        <i class="fas fa-newspaper"></i>
+                        <span>News</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="following">
+                        <i class="fas fa-heart"></i>
+                        <span>Following</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search streams, categories, or streamers...">
+                </div>
+                
+                <div class="user-info">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="profile-btn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Featured Stream -->
+                <div class="featured-stream">
+                    <div class="featured-content">
+                        <h2>🔥 Featured Live Stream</h2>
+                        <p>Experience the most popular live stream right now with thousands of viewers!</p>
+                        
+                        <div class="stream-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-eye"></i>
+                                <span>15.2K viewers</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-heart"></i>
+                                <span>2.8K likes</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-clock"></i>
+                                <span>2h 15m</span>
+                            </div>
+                        </div>
+                        
+                        <button class="watch-btn" onclick="openVideoPlayer('Featured Gaming Stream', '15.2K')">
+                            <i class="fas fa-play"></i>
+                            Watch Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="categories">
+                    <button class="category-btn active">All</button>
+                    <button class="category-btn">Gaming</button>
+                    <button class="category-btn">Music</button>
+                    <button class="category-btn">Sports</button>
+                    <button class="category-btn">News</button>
+                    <button class="category-btn">Entertainment</button>
+                    <button class="category-btn">Education</button>
+                </div>
+
+                <!-- Live Streams -->
+                <h2 class="section-title">🎮 Live Now</h2>
+                <div class="stream-grid" id="streamGrid">
+                    <!-- Streams will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+         <!-- Update Notice Modal -->
+     <div class="update-notice-modal" id="updateNoticeModal">
+         <div class="update-notice-content">
+             <div class="update-notice-icon">
+                 <i class="fas fa-tools"></i>
+             </div>
+             <div class="update-notice-title">Under Development</div>
+             <div class="update-notice-message">The application is still under development. Please stay tuned for updates!</div>
+             <button class="update-notice-btn" onclick="closeUpdateNotice()">Got it!</button>
+         </div>
+     </div>
+
+     <!-- Video Player Modal -->
+     <div class="video-modal" id="videoModal">
+         <div class="video-player">
+             <button class="close-btn" onclick="closeVideoPlayer()">
+                 <i class="fas fa-times"></i>
+             </button>
+             
+             <div class="video-container">
+                 <i class="fas fa-play-circle"></i>
+             </div>
+             
+             <div class="video-controls">
+                 <div class="video-title" id="videoTitle">Stream Title</div>
+                 <div class="video-stats">
+                     <div class="stat-item">
+                         <i class="fas fa-eye"></i>
+                         <span id="videoViewers">0</span> viewers
+                     </div>
+                     <div class="stat-item">
+                         <i class="fas fa-heart"></i>
+                         <span>Like</span>
+                     </div>
+                     <div class="stat-item">
+                         <i class="fas fa-share"></i>
+                         <span>Share</span>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+    <script>
+        // Sample stream data
+        const streamData = [
+            {
+                title: "Epic Battle Royale Tournament",
+                category: "Gaming",
+                streamer: "ProGamer123",
+                viewers: "8.5K",
+                icon: "fas fa-gamepad"
+            },
+            {
+                title: "Chill Music & Chat",
+                category: "Music",
+                streamer: "MelodyMaster",
+                viewers: "3.2K",
+                icon: "fas fa-music"
+            },
+            {
+                title: "Football Match Analysis",
+                category: "Sports",
+                streamer: "SportsFan",
+                viewers: "12.1K",
+                icon: "fas fa-futbol"
+            },
+            {
+                title: "Breaking News Live",
+                category: "News",
+                streamer: "NewsAnchor",
+                viewers: "25.6K",
+                icon: "fas fa-newspaper"
+            },
+            {
+                title: "Cooking Show Deluxe",
+                category: "Entertainment",
+                streamer: "ChefMaster",
+                viewers: "5.8K",
+                icon: "fas fa-utensils"
+            },
+            {
+                title: "Learn JavaScript Live",
+                category: "Education",
+                streamer: "CodeTeacher",
+                viewers: "2.9K",
+                icon: "fas fa-code"
+            },
+            {
+                title: "Art Creation Stream",
+                category: "Entertainment",
+                streamer: "ArtistPro",
+                viewers: "1.7K",
+                icon: "fas fa-palette"
+            },
+            {
+                title: "Fitness Workout Live",
+                category: "Entertainment",
+                streamer: "FitnessPro",
+                viewers: "4.3K",
+                icon: "fas fa-dumbbell"
+            }
+        ];
+
+        // Generate stream cards
+        function generateStreamCards() {
+            const streamGrid = document.getElementById('streamGrid');
+            streamGrid.innerHTML = '';
+
+            streamData.forEach(stream => {
+                const streamCard = document.createElement('div');
+                streamCard.className = 'stream-card';
+                streamCard.onclick = () => openVideoPlayer(stream.title, stream.viewers);
+                
+                streamCard.innerHTML = `
+                    <div class="stream-thumbnail">
+                        <i class="${stream.icon}"></i>
+                        <div class="live-badge">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
+                        <div class="viewer-count">
+                            <i class="fas fa-eye"></i>
+                            ${stream.viewers}
+                        </div>
+                    </div>
+                    <div class="stream-info">
+                        <div class="stream-title">${stream.title}</div>
+                        <div class="stream-category">${stream.category}</div>
+                        <div class="streamer-info">
+                            <div class="streamer-avatar">${stream.streamer.charAt(0)}</div>
+                            <div class="streamer-name">${stream.streamer}</div>
+                        </div>
+                    </div>
+                `;
+                
+                streamGrid.appendChild(streamCard);
+            });
+        }
+
+        // Navigation functionality
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                link.classList.add('active');
+                
+                // Handle section switching (you can expand this)
+                const section = link.dataset.section;
+                console.log(`Switched to ${section} section`);
+            });
+        });
+
+        // Category filtering
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                btn.classList.add('active');
+                
+                // Filter streams (you can implement filtering logic here)
+                console.log(`Filtering by: ${btn.textContent}`);
+            });
+        });
+
+        // Video player functions
+        function openVideoPlayer(title, viewers) {
+            const modal = document.getElementById('videoModal');
+            const videoTitle = document.getElementById('videoTitle');
+            const videoViewers = document.getElementById('videoViewers');
+            
+            videoTitle.textContent = title;
+            videoViewers.textContent = viewers;
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoPlayer() {
+            const modal = document.getElementById('videoModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('videoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'videoModal') {
+                closeVideoPlayer();
+            }
+        });
+
+        // Search functionality
+        document.querySelector('.search-bar input').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            console.log(`Searching for: ${searchTerm}`);
+            // Implement search logic here
+        });
+
+                 // Update notice functions
+         function showUpdateNotice() {
+             const modal = document.getElementById('updateNoticeModal');
+             modal.style.display = 'flex';
+             document.body.style.overflow = 'hidden';
+         }
+
+         function closeUpdateNotice() {
+             const modal = document.getElementById('updateNoticeModal');
+             modal.style.display = 'none';
+             document.body.style.overflow = 'auto';
+         }
+
+         // Initialize the app
+         document.addEventListener('DOMContentLoaded', () => {
+             // Show update notice on app load
+             setTimeout(() => {
+                 showUpdateNotice();
+             }, 500);
+             
+             generateStreamCards();
+             
+             // Simulate live viewer count updates
+             setInterval(() => {
+                 document.querySelectorAll('.viewer-count span').forEach(span => {
+                     if (Math.random() > 0.8) {
+                         const currentCount = parseFloat(span.textContent);
+                         const change = (Math.random() - 0.5) * 0.2;
+                         const newCount = Math.max(0.1, currentCount + change);
+                         span.textContent = newCount.toFixed(1) + 'K';
+                     }
+                 });
+             }, 3000);
+         });
+    </script>
+</body>
+</html>

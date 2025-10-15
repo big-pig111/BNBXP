@@ -1,0 +1,27 @@
+{
+  "name": "bnbxp-windows-xp-simulator",
+  "version": "1.0.0",
+  "description": "Windows XP Simulator with Multiplayer Snake Game and Blockchain Integration",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo '静态网站，直接访问 index.html'",
+    "dev": "echo '静态网站，直接访问 index.html'"
+  },
+  "keywords": [
+    "windows-xp",
+    "simulator",
+    "snake-game",
+    "blockchain",
+    "firebase",
+    "chat",
+    "multiplayer"
+  ],
+  "author": "BNBXP Team",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.15.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

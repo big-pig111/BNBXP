@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows XP Chat Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Configure Tailwind custom colors and fonts to simulate Windows XP style -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'xp-blue': '#000080',
+                        'xp-lightblue': '#1084d0',
+                        'xp-gray': '#c0c0c0',
+                        'xp-lightgray': '#f0f0f0',
+                        'xp-darkgray': '#808080',
+                        'xp-bg': '#ffffff',
+                        'xp-taskbar': '#c0c0c0',
+                    },
+                    fontFamily: {
+                        'xp': ['Tahoma', 'Segoe UI', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'xp-button': '1px 1px 0px #000000',
+                        'xp-button-pressed': 'inset 1px 1px 0px #000000',
+                        'xp-window': '2px 2px 0px #000000',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .xp-border {
+                border-top: 1px solid #ffffff;
+                border-left: 1px solid #ffffff;
+                border-right: 1px solid #808080;
+                border-bottom: 1px solid #808080;
+            }
+            .xp-border-inverse {
+                border-top: 1px solid #808080;
+                border-left: 1px solid #808080;
+                border-right: 1px solid #ffffff;
+                border-bottom: 1px solid #ffffff;
+            }
+            .xp-title-gradient {
+                background: linear-gradient(90deg, #000080, #1084d0);
+            }
+            .xp-button-hover {
+                background-color: #c0c0c0;
+            }
+            .xp-button-active {
+                background-color: #c0c0c0;
+                border-top: 1px solid #808080;
+                border-left: 1px solid #808080;
+                border-right: 1px solid #ffffff;
+                border-bottom: 1px solid #ffffff;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#008080] font-xp min-h-screen flex flex-col">
+    <!-- Desktop background -->
+    <div class="flex-grow flex justify-center items-center p-4">
+        <!-- Login window -->
+        <div id="loginWindow" class="xp-border bg-xp-gray shadow-xp-window w-full max-w-md mx-auto">
+            <!-- Title bar -->
+            <div class="xp-title-gradient text-white p-1 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-comments"></i>
+                    <span>Windows Chat Room</span>
+                </div>
+                <div class="flex space-x-1">
+                    <button class="w-6 h-6 flex items-center justify-center bg-xp-gray xp-border text-black hover:bg-red-500 hover:text-white transition-colors">
+                        <i class="fa fa-times text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Window content -->
+            <div class="p-4">
+                <div class="text-center mb-4">
+                    <img src="png/1.png" alt="Chat Room Icon" class="mx-auto xp-border p-1 bg-white w-20 h-20 object-contain">
+                    <h2 class="text-lg mt-2 font-bold">Welcome to Chat Room</h2>
+                    <p class="text-sm">Please enter your nickname to login</p>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm mb-1">Nickname</label>
+                        <input type="text" id="username" 
+                               class="w-full xp-border bg-white px-2 py-1 focus:outline-none focus:ring-1 focus:ring-xp-blue"
+                               placeholder="Enter your nickname">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm mb-1">Server</label>
+                        <input type="text" id="server" 
+                               class="w-full xp-border bg-white px-2 py-1 focus:outline-none focus:ring-1 focus:ring-xp-blue"
+                               value="localhost:3000" placeholder="Server address">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-2 mt-4">
+                        <button id="loginButton" 
+                                class="xp-border px-4 py-1 hover:xp-button-active transition-all flex items-center">
+                            <i class="fa fa-sign-in mr-1"></i> Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat window (hidden by default) -->
+        <div id="chatWindow" class="xp-border bg-xp-gray shadow-xp-window w-full max-w-5xl mx-auto hidden">
+            <!-- Title bar -->
+            <div class="xp-title-gradient text-white p-1 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-comments"></i>
+                    <span>Windows Chat Room - <span id="chatTitle">Disconnected</span></span>
+                </div>
+                <div class="flex space-x-1">
+                    <button id="minimizeButton" class="w-6 h-6 flex items-center justify-center bg-xp-gray xp-border text-black hover:bg-xp-lightblue hover:text-white transition-colors">
+                        <i class="fa fa-window-minimize text-xs"></i>
+                    </button>
+                    <button id="closeButton" class="w-6 h-6 flex items-center justify-center bg-xp-gray xp-border text-black hover:bg-red-500 hover:text-white transition-colors">
+                        <i class="fa fa-times text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Window content -->
+            <div class="flex h-[500px]">
+                <!-- Left user list -->
+                <div class="w-1/4 border-r-2 border-xp-darkgray flex flex-col">
+                    <div class="p-2 bg-xp-lightgray xp-border-inverse text-sm font-bold">
+                        <i class="fa fa-users mr-1"></i> Online Users
+                    </div>
+                    <div id="userList" class="flex-grow overflow-y-auto p-2 space-y-1 bg-white">
+                        <!-- User list will be dynamically generated here -->
+                        <div class="text-sm italic text-gray-500">Waiting for connection...</div>
+                    </div>
+                </div>
+                
+                <!-- Right chat area -->
+                <div class="w-3/4 flex flex-col">
+                    <!-- Chat message area -->
+                    <div id="messageArea" class="flex-grow overflow-y-auto p-3 bg-white">
+                        <!-- Messages will be dynamically generated here -->
+                        <div class="text-center text-sm text-gray-500 mb-2">
+                            Welcome to Windows XP Chat Room
+                        </div>
+                        <div class="text-center text-sm text-gray-500">
+                            Please login to start chatting
+                        </div>
+                    </div>
+                    
+                    <!-- Input area separator -->
+                    <div class="h-px bg-xp-darkgray"></div>
+                    
+                    <!-- Message input area -->
+                    <div class="p-2">
+                        <textarea id="messageInput" 
+                                  class="w-full h-20 xp-border bg-white px-2 py-1 focus:outline-none focus:ring-1 focus:ring-xp-blue resize-none"
+                                  placeholder="Enter message..."></textarea>
+                        <div class="flex justify-between mt-2">
+                            <div class="text-xs text-gray-600">
+                                <span id="connectionStatus" class="text-red-600">Disconnected</span>
+                            </div>
+                            <button id="sendButton" 
+                                    class="xp-border px-4 py-1 hover:xp-button-active transition-all flex items-center"
+                                    disabled>
+                                <i class="fa fa-paper-plane mr-1"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom taskbar -->
+    <div class="bg-xp-taskbar h-10 border-t: 1px solid #ffffff flex items-center px-2">
+        <div class="xp-border bg-xp-gray px-2 py-1 flex items-center text-sm font-bold">
+            <i class="fa fa-windows mr-2"></i>
+            <span>Start</span>
+        </div>
+        <div class="ml-4 flex items-center">
+            <div id="taskbarItem" class="hidden bg-xp-lightgray px-3 py-1 xp-border-inverse text-sm flex items-center">
+                <i class="fa fa-comments mr-2"></i>
+                <span>Chat Room</span>
+            </div>
+        </div>
+        <div class="ml-auto flex items-center mr-2">
+            <div class="text-xs px-2 py-1 xp-border-inverse">
+                <span id="systemTime">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM element references
+        const loginWindow = document.getElementById('loginWindow');
+        const chatWindow = document.getElementById('chatWindow');
+        const loginButton = document.getElementById('loginButton');
+        const usernameInput = document.getElementById('username');
+        const serverInput = document.getElementById('server');
+        const messageArea = document.getElementById('messageArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const userList = document.getElementById('userList');
+        const closeButton = document.getElementById('closeButton');
+        const minimizeButton = document.getElementById('minimizeButton');
+        const taskbarItem = document.getElementById('taskbarItem');
+        const chatTitle = document.getElementById('chatTitle');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const systemTime = document.getElementById('systemTime');
+        
+        // Global variables
+        let username = '';
+        let serverAddress = '';
+        let socket = null; // For storing WebSocket connection
+        
+        // Update system time (UTC)
+        function updateSystemTime() {
+            const now = new Date();
+            const hours = now.getUTCHours().toString().padStart(2, '0');
+            const minutes = now.getUTCMinutes().toString().padStart(2, '0');
+            systemTime.textContent = `${hours}:${minutes} UTC`;
+        }
+        
+        // Initialize system time and update every second
+        updateSystemTime();
+        setInterval(updateSystemTime, 60000);
+        
+        // Add message to chat area
+        function addMessage(sender, text, isSelf = false, isSystem = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `mb-3 ${isSelf ? 'text-right' : 'text-left'}`;
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `inline-block max-w-[80%] px-2 py-1 xp-border ${
+                isSystem ? 'bg-xp-lightgray' : 
+                isSelf ? 'bg-[#cfeeff]' : 'bg-white'
+            }`;
+            
+            if (!isSystem) {
+                const senderSpan = document.createElement('div');
+                senderSpan.className = `text-xs font-bold ${isSelf ? 'text-blue-700' : 'text-green-700'}`;
+                senderSpan.textContent = `${sender} ${getCurrentTime()}`;
+                messageBubble.appendChild(senderSpan);
+            } else {
+                const systemSpan = document.createElement('div');
+                systemSpan.className = 'text-xs text-gray-600 italic';
+                systemSpan.textContent = `${text} ${getCurrentTime()}`;
+                messageBubble.appendChild(systemSpan);
+                messageDiv.className = 'mb-3 text-center';
+                return messageDiv.appendChild(messageBubble);
+            }
+            
+            const textSpan = document.createElement('div');
+            textSpan.className = 'text-sm';
+            textSpan.textContent = text;
+            messageBubble.appendChild(textSpan);
+            
+            messageDiv.appendChild(messageBubble);
+            messageArea.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+        
+        // Get current time (UTC)
+        function getCurrentTime() {
+            const now = new Date();
+            return `[${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC]`;
+        }
+        
+        // Update user list
+        function updateUserList(users) {
+            userList.innerHTML = '';
+            
+            if (users.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'text-sm italic text-gray-500';
+                emptyMsg.textContent = 'No online users';
+                userList.appendChild(emptyMsg);
+                return;
+            }
+            
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = `text-sm flex items-center ${user === username ? 'font-bold text-blue-700' : ''}`;
+                userDiv.innerHTML = `<i class="fa fa-user-circle mr-2 ${user === username ? 'text-blue-700' : 'text-green-600'}"></i> ${user}`;
+                userList.appendChild(userDiv);
+            });
+        }
+        
+        // Login handler
+        loginButton.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            serverAddress = serverInput.value.trim();
+            
+            if (!username) {
+                alert('Please enter a nickname');
+                return;
+            }
+            
+            if (!serverAddress) {
+                alert('Please enter a server address');
+                return;
+            }
+            
+            // Show chat window, hide login window
+            loginWindow.classList.add('hidden');
+            chatWindow.classList.remove('hidden');
+            taskbarItem.classList.remove('hidden');
+            chatTitle.textContent = `Connecting to ${serverAddress}`;
+            
+            // Connect to backend (this is a placeholder for the backend connection)
+            connectToServer();
+        });
+        
+        // Send message
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Send message function
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !socket) return;
+            
+            // Send message to backend (this is a placeholder for the backend connection)
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'message',
+                    sender: username,
+                    text: message,
+                    timestamp: new Date().toISOString()
+                }));
+                
+                // Display locally sent message
+                addMessage(username, message, true);
+                
+                // Clear input field
+                messageInput.value = '';
+            }
+        }
+        
+        // Close button event
+        closeButton.addEventListener('click', () => {
+            // Disconnect (this is a placeholder for the backend connection)
+            if (socket) {
+                socket.close();
+            }
+            
+            // Show login window, hide chat window
+            chatWindow.classList.add('hidden');
+            loginWindow.classList.remove('hidden');
+            taskbarItem.classList.add('hidden');
+            
+            // Reset chat area
+            messageArea.innerHTML = `
+                <div class="text-center text-sm text-gray-500 mb-2">
+                    Welcome to Windows XP Chat Room
+                </div>
+                <div class="text-center text-sm text-gray-500">
+                    Please login to start chatting
+                </div>
+            `;
+        });
+        
+        // Minimize button event
+        minimizeButton.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
+            taskbarItem.classList.remove('hidden');
+        });
+        
+        // Taskbar item click event
+        taskbarItem.addEventListener('click', () => {
+            chatWindow.classList.remove('hidden');
+        });
+        
+        // Connect to server (this is a placeholder for the backend connection)
+        function connectToServer() {
+            // Show connection status
+            connectionStatus.textContent = 'Connecting...';
+            connectionStatus.className = 'text-yellow-600';
+            sendButton.disabled = true;
+            
+            // In a real project, this would connect to your WebSocket server
+            // The following is example code, you need to modify it according to your actual backend
+            
+            try {
+                // Create WebSocket connection
+                socket = new WebSocket(`ws://${serverAddress}`);
+                
+                // Connection successful
+                socket.onopen = () => {
+                    console.log('Connected to server successfully');
+                    connectionStatus.textContent = 'Connected';
+                    connectionStatus.className = 'text-green-600';
+                    sendButton.disabled = false;
+                    
+                    // Send login information
+                    socket.send(JSON.stringify({
+                        type: 'login',
+                        username: username
+                    }));
+                    
+                    addMessage('', `Successfully connected to server: ${serverAddress}`, false, true);
+                };
+                
+                // Receive messages
+                socket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log('Received message:', data);
+                    
+                    switch (data.type) {
+                        case 'message':
+                            // Display received message
+                            addMessage(data.sender, data.text, data.sender === username);
+                            break;
+                        case 'userList':
+                            // Update user list
+                            updateUserList(data.users);
+                            break;
+                        case 'system':
+                            // Display system message
+                            addMessage('', data.text, false, true);
+                            break;
+                        default:
+                            console.log('Unknown message type:', data);
+                    }
+                };
+                
+                // Connection closed
+                socket.onclose = () => {
+                    console.log('Connection to server closed');
+                    connectionStatus.textContent = 'Disconnected';
+                    connectionStatus.className = 'text-red-600';
+                    sendButton.disabled = true;
+                    
+                    addMessage('', 'Connection to server closed', false, true);
+                    updateUserList([]);
+                };
+                
+                // Connection error
+                socket.onerror = (error) => {
+                    console.error('Connection error:', error);
+                    connectionStatus.textContent = 'Connection error';
+                    connectionStatus.className = 'text-red-600';
+                    sendButton.disabled = true;
+                    
+                    addMessage('', `Failed to connect to server: ${error}`, false, true);
+                };
+            } catch (error) {
+                console.error('Connection exception:', error);
+                connectionStatus.textContent = 'Connection error';
+                connectionStatus.className = 'text-red-600';
+                sendButton.disabled = true;
+                
+                addMessage('', `Connection to server failed: ${error}`, false, true);
+            }
+        }
+        
+        // Button interaction effects
+        document.querySelectorAll('.xp-border:not(.xp-border-inverse)').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('xp-button-active');
+            });
+            
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('xp-button-active');
+            });
+            
+            button.addEventListener('mouseleave', () => {
+                if (document.activeElement !== button) {
+                    button.classList.remove('xp-button-active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

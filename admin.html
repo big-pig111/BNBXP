@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center">Snake Game Admin Panel</h1>
+        
+        <!-- Game Status Control -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-xl font-bold mb-4">Game Status Control</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Current Game Status</label>
+                    <div id="gameStatus" class="text-lg font-bold text-green-400">Running</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Next Reset Time</label>
+                    <div id="nextReset" class="text-lg font-bold text-yellow-400">--:--</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button id="startGame" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold">
+                    Start Game
+                </button>
+                <button id="pauseGame" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded font-bold">
+                    Pause Game
+                </button>
+                <button id="resetGame" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-bold">
+                    Reset Now
+                </button>
+            </div>
+        </div>
+        
+        <!-- Room Status -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-6">
+            <h2 class="text-xl font-bold mb-4">Room Status</h2>
+            <div id="roomsStatus" class="space-y-2">
+                <!-- Room status will be displayed here dynamically -->
+            </div>
+        </div>
+        
+        <!-- System Settings -->
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-xl font-bold mb-4">System Settings</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Game Round Duration (minutes)</label>
+                    <input type="number" id="gameDuration" value="20" min="5" max="60" 
+                           class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Reset Interval (minutes)</label>
+                    <input type="number" id="resetInterval" value="2" min="1" max="10" 
+                           class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2">
+                </div>
+            </div>
+            
+            <button id="saveSettings" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold mt-4">
+                Save Settings
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEgDvWOldi07pRz-3na8oQ7QkJR0pzzKc",
+            authDomain: "big-pig-38efe.firebaseapp.com",
+            databaseURL: "https://big-pig-38efe-default-rtdb.firebaseio.com",
+            projectId: "big-pig-38efe",
+            storageBucket: "big-pig-38efe.firebasestorage.app",
+            messagingSenderId: "443761891665",
+            appId: "1:443761891665:web:e2246e398a6951128cdb70",
+            measurementId: "G-ZM3BEXBYPW"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // DOM elements
+        const gameStatusEl = document.getElementById('gameStatus');
+        const nextResetEl = document.getElementById('nextReset');
+        const roomsStatusEl = document.getElementById('roomsStatus');
+        const startGameBtn = document.getElementById('startGame');
+        const pauseGameBtn = document.getElementById('pauseGame');
+        const resetGameBtn = document.getElementById('resetGame');
+        const gameDurationInput = document.getElementById('gameDuration');
+        const resetIntervalInput = document.getElementById('resetInterval');
+        const saveSettingsBtn = document.getElementById('saveSettings');
+
+        // Game state
+        let gameState = {
+            isRunning: false,
+            nextReset: null,
+            gameDuration: 20,
+            resetInterval: 2
+        };
+
+        // Initialize
+        function init() {
+            loadGameState();
+            loadSettings();
+            startTimer();
+            loadRoomsStatus();
+            
+            // Listen for game state changes
+            database.ref('gameState').on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    gameState = { ...gameState, ...snapshot.val() };
+                    updateUI();
+                }
+            });
+        }
+
+        // Load game state
+        function loadGameState() {
+            database.ref('gameState').once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    gameState = { ...gameState, ...snapshot.val() };
+                    updateUI();
+                }
+            });
+        }
+
+        // Load settings
+        function loadSettings() {
+            database.ref('settings').once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const settings = snapshot.val();
+                    gameDurationInput.value = settings.gameDuration || 20;
+                    resetIntervalInput.value = settings.resetInterval || 2;
+                }
+            });
+        }
+
+        // Update UI
+        function updateUI() {
+            gameStatusEl.textContent = gameState.isRunning ? 'Running' : 'Paused';
+            gameStatusEl.className = gameState.isRunning ? 'text-lg font-bold text-green-400' : 'text-lg font-bold text-red-400';
+            
+            if (gameState.nextReset) {
+                const timeLeft = Math.max(0, gameState.nextReset - Date.now());
+                const minutes = Math.floor(timeLeft / 60000);
+                const seconds = Math.floor((timeLeft % 60000) / 1000);
+                nextResetEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                nextResetEl.textContent = '--:--';
+            }
+        }
+
+        // Start timer
+        function startTimer() {
+            setInterval(() => {
+                if (gameState.isRunning && gameState.nextReset && Date.now() >= gameState.nextReset) {
+                    resetGame();
+                }
+                updateUI();
+            }, 1000);
+        }
+
+        // Load room status
+        function loadRoomsStatus() {
+            database.ref('rooms').on('value', (snapshot) => {
+                const rooms = snapshot.val() || {};
+                let html = '';
+                
+                Object.keys(rooms).forEach(roomName => {
+                    const room = rooms[roomName];
+                    const playerCount = room.players ? Object.keys(room.players).length : 0;
+                    const foodCount = room.foods ? room.foods.length : 0;
+                    
+                    html += `
+                        <div class="bg-gray-700 p-3 rounded">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold">${roomName}</span>
+                                <span class="text-sm">Players: ${playerCount} | Foods: ${foodCount}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                roomsStatusEl.innerHTML = html || '<p class="text-gray-400">No room data available</p>';
+            });
+        }
+
+        // Start game
+        function startGame() {
+            const nextReset = Date.now() + (gameState.gameDuration * 60000);
+            database.ref('gameState').update({
+                isRunning: true,
+                nextReset: nextReset,
+                lastUpdate: Date.now()
+            });
+        }
+
+        // Pause game
+        function pauseGame() {
+            database.ref('gameState').update({
+                isRunning: false,
+                lastUpdate: Date.now()
+            });
+        }
+
+        // Reset game
+        function resetGame() {
+            // Clear all room data
+            database.ref('rooms').remove();
+            
+            // Reset game state
+            const nextReset = Date.now() + (gameState.gameDuration * 60000);
+            database.ref('gameState').update({
+                isRunning: true,
+                nextReset: nextReset,
+                lastUpdate: Date.now()
+            });
+            
+            console.log('Game reset');
+        }
+
+        // Save settings
+        function saveSettings() {
+            const gameDuration = parseInt(gameDurationInput.value);
+            const resetInterval = parseInt(resetIntervalInput.value);
+            
+            database.ref('settings').set({
+                gameDuration: gameDuration,
+                resetInterval: resetInterval
+            });
+            
+            gameState.gameDuration = gameDuration;
+            gameState.resetInterval = resetInterval;
+            
+            alert('Settings saved');
+        }
+
+        // Event listeners
+        startGameBtn.addEventListener('click', startGame);
+        pauseGameBtn.addEventListener('click', pauseGame);
+        resetGameBtn.addEventListener('click', resetGame);
+        saveSettingsBtn.addEventListener('click', saveSettings);
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html> 
