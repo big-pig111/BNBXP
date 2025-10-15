@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { ethers } = require('ethers');
+const cors = require('cors')({ origin: true });
 
 // 初始化 Firebase Admin
 admin.initializeApp();
@@ -341,5 +342,111 @@ exports.getWalletStatus = functions.region('us-central1').https.onCall(async (da
       `Failed to get wallet status: ${error.message}`
     );
   }
+});
+
+// ==================== 备用HTTP接口：显式处理CORS（用于前端跨域调用） ====================
+exports.claimTokenHttp = functions.region('us-central1').https.onRequest((req, res) => {
+  // 允许所有来源，或按需限制为特定域名
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
+
+  return cors(req, res, async () => {
+    try {
+      const { wallet } = req.body || {};
+
+      if (!wallet) {
+        return res.status(400).json({ success: false, message: 'Missing wallet address' });
+      }
+
+      if (!ethers.isAddress(wallet)) {
+        return res.status(400).json({ success: false, message: 'Invalid BSC wallet address format' });
+      }
+
+      const db = admin.database();
+      const userRef = db.ref(`users/${wallet}`);
+      const snapshot = await userRef.once('value');
+      const userData = snapshot.val();
+
+      if (!userData || !userData.score || userData.score <= 0) {
+        return res.status(412).json({ success: false, message: 'No points available for this wallet' });
+      }
+
+      const score = userData.score;
+      const tokenAmount = score * 10;
+
+      if (TOKEN_CONTRACT_ADDRESS === 'YOUR_TOKEN_CA_HERE' || WALLET_PRIVATE_KEY === 'YOUR_PRIVATE_KEY_HERE') {
+        return res.status(412).json({ success: false, message: 'Cloud Function not configured. Please set TOKEN_CONTRACT_ADDRESS and WALLET_PRIVATE_KEY' });
+      }
+
+      const rpcUrl = USE_TESTNET ? BSC_TESTNET_RPC_URL : BSC_RPC_URL;
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+
+      let signer;
+      try {
+        signer = new ethers.Wallet(WALLET_PRIVATE_KEY, provider);
+      } catch (e) {
+        return res.status(500).json({ success: false, message: 'Invalid wallet configuration' });
+      }
+
+      try {
+        const tokenContract = new ethers.Contract(
+          TOKEN_CONTRACT_ADDRESS,
+          BEP20_ABI,
+          signer
+        );
+
+        const tokenDecimals = await tokenContract.decimals();
+        const senderBalance = await tokenContract.balanceOf(signer.address);
+        const amountToSend = ethers.parseUnits(String(tokenAmount), tokenDecimals);
+        if (senderBalance < amountToSend) {
+          return res.status(429).json({ success: false, message: 'Insufficient token balance' });
+        }
+
+        const bnbBalance = await provider.getBalance(signer.address);
+        if (bnbBalance < ethers.parseEther('0.001')) {
+          return res.status(429).json({ success: false, message: 'Insufficient BNB for gas fees' });
+        }
+
+        const tx = await tokenContract.transfer(wallet, amountToSend);
+        const receipt = await tx.wait(1);
+
+        const transactionRecord = {
+          wallet,
+          score,
+          tokenAmount,
+          txHash: tx.hash,
+          blockNumber: receipt.blockNumber,
+          timestamp: Date.now(),
+          status: 'success',
+          network: USE_TESTNET ? 'BSC_TESTNET' : 'BSC_MAINNET'
+        };
+        await db.ref(`transactions/${tx.hash}`).set(transactionRecord);
+
+        return res.status(200).json({
+          success: true,
+          tx: tx.hash,
+          blockNumber: receipt.blockNumber,
+          amount: tokenAmount,
+          message: `Successfully sent ${tokenAmount} tokens to ${wallet}`
+        });
+      } catch (error) {
+        await admin.database().ref(`failedTransactions/${Date.now()}_${wallet}`).set({
+          wallet,
+          score: (userData && userData.score) || 0,
+          tokenAmount: tokenAmount || 0,
+          error: error.message,
+          timestamp: Date.now()
+        });
+        return res.status(500).json({ success: false, message: `Token transfer failed: ${error.message}` });
+      }
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message || 'Internal error' });
+    }
+  });
 });
 
