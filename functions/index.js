@@ -38,7 +38,7 @@ const BEP20_ABI = [
 ];
 
 // ==================== 主要函数：代币领取 ====================
-exports.claimToken = functions.https.onCall(async (data, context) => {
+exports.claimToken = functions.region('us-central1').https.onCall(async (data, context) => {
   console.log('=== 开始处理代币领取请求 ===');
   console.log('请求数据:', data);
   
@@ -248,7 +248,7 @@ exports.claimToken = functions.https.onCall(async (data, context) => {
 });
 
 // ==================== 辅助函数：查询代币余额 ====================
-exports.getTokenBalance = functions.https.onCall(async (data, context) => {
+exports.getTokenBalance = functions.region('us-central1').https.onCall(async (data, context) => {
   console.log('=== 查询代币余额 ===');
   
   try {
@@ -297,7 +297,7 @@ exports.getTokenBalance = functions.https.onCall(async (data, context) => {
 });
 
 // ==================== 辅助函数：获取发送钱包状态 ====================
-exports.getWalletStatus = functions.https.onCall(async (data, context) => {
+exports.getWalletStatus = functions.region('us-central1').https.onCall(async (data, context) => {
   console.log('=== 查询发送钱包状态 ===');
   
   try {
