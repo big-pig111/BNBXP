@@ -821,7 +821,7 @@ class WindowsXP {
                                         </span>
                                     </div>
                                     <div style="display: flex; gap: 8px;">
-                                        <button id="clearChatBtn" style="padding: 6px 12px; background: linear-gradient(135deg, #c84a4a 0%, #a03030 100%); border: 2px outset #c0c0c0; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; color: white; transition: all 0.2s;" title="Clear all chat messages" disabled>
+                                        <button id="clearChatBtn" style="padding: 6px 12px; background: linear-gradient(135deg, #c84a4a 0%, #a03030 100%); border: 2px outset #c0c0c0; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; color: white; transition: all 0.2s; display: none;" title="Clear all chat messages" disabled>
                                             <i class="fas fa-trash" style="margin-right: 3px;"></i>Clear
                                         </button>
                                         <button id="scrollToBottomBtn" style="padding: 6px 12px; background: linear-gradient(135deg, #1084d0 0%, #000080 100%); border: 2px outset #4a6fd8; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; color: white; transition: all 0.2s; display: none; box-shadow: 0 2px 8px rgba(0,0,128,0.3); animation: pulse 2s infinite;" title="Scroll to latest message">
